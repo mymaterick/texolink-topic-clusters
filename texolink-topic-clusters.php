@@ -12,6 +12,12 @@
  * Requires at least: 5.8
  * Requires PHP: 7.4
  * Requires Plugins: texolink-internal-links
+ *
+ * Copyright (c) 2025 Rick Carter / TexoLink
+ * All rights reserved.
+ *
+ * This file is part of TexoLink and is proprietary software.
+ * Unauthorized use is prohibited.
  * 
  * @package TexoLink_Topic_Clusters
  */
