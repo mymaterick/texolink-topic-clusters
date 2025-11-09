@@ -22,18 +22,20 @@ class TexoLink_Clusters_API_Connector {
      * API URL from TexoLink
      */
     private $api_url;
-    
+
     /**
-     * Site key from TexoLink
+     * Site domain (identifier for this WordPress site)
      */
-    private $site_key;
-    
+    private $site_domain;
+
     /**
      * Constructor
      */
     public function __construct() {
         $this->api_url = texolink_clusters_get_api_url();
-        $this->site_key = texolink_clusters_get_site_key();
+        // Use site domain as identifier (same as TexoLink plugin)
+        $site_url = get_site_url();
+        $this->site_domain = parse_url($site_url, PHP_URL_HOST);
     }
     
     /**
@@ -44,29 +46,30 @@ class TexoLink_Clusters_API_Connector {
      * @return array|WP_Error Response with generation_id or error
      */
     public function generate_topic_cluster($topic) {
-        if (empty($this->site_key)) {
+        if (empty($this->site_domain)) {
             return new WP_Error(
-                'no_site_key',
-                __('TexoLink is not configured. Please configure TexoLink first.', 'texolink-clusters')
+                'no_site_domain',
+                __('Could not determine site domain.', 'texolink-clusters')
             );
         }
-        
+
         $endpoint = trailingslashit($this->api_url) . 'generate_topic_cluster';
-        
+
         error_log('TexoLink Clusters - Generate endpoint: ' . $endpoint);
         error_log('TexoLink Clusters - Topic: ' . $topic);
-        
+        error_log('TexoLink Clusters - Site domain: ' . $this->site_domain);
+
         $response = wp_remote_post($endpoint, array(
             'timeout' => 30,
             'headers' => array(
                 'Content-Type' => 'application/json',
             ),
             'body' => json_encode(array(
-                'site_key' => $this->site_key,
+                'site_domain' => $this->site_domain,
                 'topic' => $topic
             ))
         ));
-        
+
         return $this->handle_response($response);
     }
     
@@ -77,26 +80,26 @@ class TexoLink_Clusters_API_Connector {
      * @return array|WP_Error Response with status or error
      */
     public function check_status($generation_id) {
-        if (empty($this->site_key)) {
+        if (empty($this->site_domain)) {
             return new WP_Error(
-                'no_site_key',
-                __('TexoLink is not configured.', 'texolink-clusters')
+                'no_site_domain',
+                __('Could not determine site domain.', 'texolink-clusters')
             );
         }
-        
+
         $endpoint = trailingslashit($this->api_url) . 'topic_cluster_status';
-        
+
         $response = wp_remote_post($endpoint, array(
             'timeout' => 10,
             'headers' => array(
                 'Content-Type' => 'application/json',
             ),
             'body' => json_encode(array(
-                'site_key' => $this->site_key,
+                'site_domain' => $this->site_domain,
                 'generation_id' => $generation_id
             ))
         ));
-        
+
         return $this->handle_response($response);
     }
     
@@ -107,26 +110,26 @@ class TexoLink_Clusters_API_Connector {
      * @return array|WP_Error Response with results or error
      */
     public function get_results($generation_id) {
-        if (empty($this->site_key)) {
+        if (empty($this->site_domain)) {
             return new WP_Error(
-                'no_site_key',
-                __('TexoLink is not configured.', 'texolink-clusters')
+                'no_site_domain',
+                __('Could not determine site domain.', 'texolink-clusters')
             );
         }
-        
+
         $endpoint = trailingslashit($this->api_url) . 'topic_cluster_results';
-        
+
         $response = wp_remote_post($endpoint, array(
             'timeout' => 30,
             'headers' => array(
                 'Content-Type' => 'application/json',
             ),
             'body' => json_encode(array(
-                'site_key' => $this->site_key,
+                'site_domain' => $this->site_domain,
                 'generation_id' => $generation_id
             ))
         ));
-        
+
         return $this->handle_response($response);
     }
     
@@ -183,30 +186,23 @@ class TexoLink_Clusters_API_Connector {
      * @return bool|WP_Error True if connected, error otherwise
      */
     public function test_connection() {
-        if (empty($this->site_key)) {
-            return new WP_Error(
-                'no_site_key',
-                __('TexoLink is not configured. Please configure TexoLink first.', 'texolink-clusters')
-            );
-        }
-        
         // Use TexoLink's health endpoint
         $endpoint = trailingslashit($this->api_url) . 'health';
-        
+
         $response = wp_remote_get($endpoint, array(
             'timeout' => 10
         ));
-        
+
         if (is_wp_error($response)) {
             return $response;
         }
-        
+
         $status_code = wp_remote_retrieve_response_code($response);
-        
+
         if ($status_code === 200) {
             return true;
         }
-        
+
         return new WP_Error(
             'connection_failed',
             sprintf(__('Connection failed with status code %d', 'texolink-clusters'), $status_code)
