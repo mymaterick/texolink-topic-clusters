@@ -25,7 +25,7 @@ use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 $updateChecker = PucFactory::buildUpdateChecker(
     'https://github.com/mymaterick/texolink-topic-clusters',
     __FILE__,
-    'texolink-topic-clusters-v2'
+    'texolink-topic-clusters'
 );
 
 // Enable release assets (so users can download from GitHub releases)
