@@ -65,7 +65,7 @@ class TexoLink_Clusters_API_Connector {
                 'Content-Type' => 'application/json',
             ),
             'body' => json_encode(array(
-                'site_domain' => $this->site_domain,
+                'site_key' => $this->site_domain,  // Backend expects 'site_key'
                 'topic' => $topic
             ))
         ));
@@ -95,7 +95,7 @@ class TexoLink_Clusters_API_Connector {
                 'Content-Type' => 'application/json',
             ),
             'body' => json_encode(array(
-                'site_domain' => $this->site_domain,
+                'site_key' => $this->site_domain,  // Backend expects 'site_key'
                 'generation_id' => $generation_id
             ))
         ));
@@ -125,7 +125,7 @@ class TexoLink_Clusters_API_Connector {
                 'Content-Type' => 'application/json',
             ),
             'body' => json_encode(array(
-                'site_domain' => $this->site_domain,
+                'site_key' => $this->site_domain,  // Backend expects 'site_key'
                 'generation_id' => $generation_id
             ))
         ));
