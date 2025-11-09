@@ -16,6 +16,21 @@
  * @package TexoLink_Topic_Clusters
  */
 
+// ============================================================================
+// AUTO-UPDATE CHECKER - Checks GitHub for new releases
+// ============================================================================
+require 'plugin-update-checker/plugin-update-checker.php';
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+
+$updateChecker = PucFactory::buildUpdateChecker(
+    'https://github.com/mymaterick/texolink-topic-clusters',
+    __FILE__,
+    'texolink-topic-clusters-v2'
+);
+
+// Enable release assets (so users can download from GitHub releases)
+$updateChecker->getVcsApi()->enableReleaseAssets();
+
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
     exit;
