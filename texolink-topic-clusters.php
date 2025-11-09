@@ -204,27 +204,31 @@ add_action('plugins_loaded', 'texolink_clusters_init');
  * Helper function to get site key from TexoLink
  */
 function texolink_clusters_get_site_key() {
+    // Check if TexoLink provides a function
     if (function_exists('texolink_get_site_key')) {
         return texolink_get_site_key();
     }
-    return null;
+    // Fallback to direct option access
+    return get_option('texolink_site_id', '');
 }
 
 /**
  * Helper function to get API URL from TexoLink
  */
 function texolink_clusters_get_api_url() {
+    // Check if TexoLink provides a function
     if (function_exists('texolink_get_api_url')) {
         return texolink_get_api_url();
     }
-    return '';
+    // Fallback to direct option access
+    return get_option('texolink_api_url', '');
 }
 
 /**
  * Helper function to check if plugin is configured
  */
 function texolink_clusters_is_configured() {
-    $site_key = texolink_clusters_get_site_key();
     $api_url = texolink_clusters_get_api_url();
-    return !empty($site_key) && !empty($api_url);
+    // Just check if API URL is set - that's the main requirement
+    return !empty($api_url);
 }
