@@ -35,6 +35,10 @@ class TexoLink_Clusters_API_Connector {
         $this->api_url = texolink_clusters_get_api_url();
         // Get API key from main TexoLink plugin
         $this->site_key = get_option('texolink_api_key', '');
+
+        // DEBUG: Log what we got
+        error_log('TexoLink Clusters DEBUG - API Key retrieved: ' . ($this->site_key ? 'YES (length: ' . strlen($this->site_key) . ')' : 'NO (empty)'));
+        error_log('TexoLink Clusters DEBUG - All texolink options: ' . print_r(wp_load_alloptions(), true));
     }
     
     /**
