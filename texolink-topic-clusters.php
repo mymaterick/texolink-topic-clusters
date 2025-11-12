@@ -3,7 +3,7 @@
  * Plugin Name: TexoLink Topic Clusters
  * Plugin URI: https://texolink.com/topic-clusters
  * Description: AI-powered topic cluster building for WordPress. Requires TexoLink plugin. Find related content and build internal link clusters using semantic search.
- * Version: 1.0.6
+ * Version: 1.0.7
  * Author: TexoLink
  * Author URI: https://texolink.com
  * License: GPL v2 or later
