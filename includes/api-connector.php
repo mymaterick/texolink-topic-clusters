@@ -81,7 +81,7 @@ class TexoLink_Clusters_API_Connector {
         error_log('TexoLink Clusters - Site domain: ' . $this->site_domain);
 
         $response = wp_remote_post($endpoint, array(
-            'timeout' => 30,
+            'timeout' => 120,  // Increased to 2 minutes for large clusters
             'headers' => array(
                 'Content-Type' => 'application/json',
                 'X-Admin-Secret' => $this->admin_secret
