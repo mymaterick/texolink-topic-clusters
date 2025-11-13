@@ -16,16 +16,18 @@
     let statusCheckInterval = null;
     
     const $topicInput = $('#cluster-topic-input');
+    const $clusterSizeSelect = $('#cluster-size-select');
     const $searchBtn = $('#search-cluster-btn');
     const $loadingDiv = $('#cluster-loading');
     const $resultsDiv = $('#cluster-results');
     const $emptyDiv = $('#cluster-empty');
-    
+
     // Search button click
     $searchBtn.on('click', function() {
         const topic = $topicInput.val().trim();
         if (topic) {
-            startGeneration(topic);
+            const clusterSize = parseInt($clusterSizeSelect.val()) || 20;
+            startGeneration(topic, clusterSize);
         }
     });
     
@@ -47,20 +49,20 @@
     /**
      * Start generation process
      */
-    function startGeneration(topic) {
-        console.log('🚀 Starting generation for topic:', topic);
-        
+    function startGeneration(topic, clusterSize) {
+        console.log('🚀 Starting generation for topic:', topic, 'with cluster size:', clusterSize);
+
         currentTopic = topic;
         generationId = null;
-        
+
         // Show loading state
         showLoading('Initializing search...', 0);
         $resultsDiv.hide();
         $emptyDiv.hide();
-        
+
         // Disable search button
         $searchBtn.prop('disabled', true);
-        
+
         // Start generation
         $.ajax({
             url: texolinkClusters.ajaxUrl,
@@ -68,9 +70,10 @@
             data: {
                 action: 'texolink_clusters_generate',
                 nonce: texolinkClusters.nonce,
-                topic: topic
+                topic: topic,
+                cluster_size: clusterSize
             },
-            timeout: 30000,
+            timeout: 120000,  // 2 minutes to match backend
             success: function(response) {
                 console.log('✅ Generation started:', response);
                 

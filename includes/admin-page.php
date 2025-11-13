@@ -109,23 +109,30 @@ class TexoLink_Clusters_Admin {
                     <div class="search-input-group">
                         <label for="cluster-topic-input"><?php _e('Find posts about:', 'texolink-clusters'); ?></label>
                         <div class="input-wrapper">
-                            <input 
-                                type="text" 
-                                id="cluster-topic-input" 
+                            <input
+                                type="text"
+                                id="cluster-topic-input"
                                 class="cluster-topic-input"
-                                placeholder="<?php esc_attr_e('e.g., page speed, SEO, WordPress...', 'texolink-clusters'); ?>" 
+                                placeholder="<?php esc_attr_e('e.g., page speed, SEO, WordPress...', 'texolink-clusters'); ?>"
                                 autocomplete="off"
                             />
+                            <select id="cluster-size-select" class="cluster-size-select">
+                                <option value="10"><?php _e('10 posts (Fast)', 'texolink-clusters'); ?></option>
+                                <option value="15"><?php _e('15 posts', 'texolink-clusters'); ?></option>
+                                <option value="20" selected><?php _e('20 posts (Recommended)', 'texolink-clusters'); ?></option>
+                                <option value="25"><?php _e('25 posts', 'texolink-clusters'); ?></option>
+                                <option value="30"><?php _e('30 posts (Slower)', 'texolink-clusters'); ?></option>
+                            </select>
                             <button id="search-cluster-btn" class="button button-primary button-hero">
                                 <span class="dashicons dashicons-search"></span>
                                 <?php _e('Search', 'texolink-clusters'); ?>
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="search-help">
                         <span class="dashicons dashicons-info"></span>
-                        <p><?php _e('Enter any topic to find all related content and build internal link clusters', 'texolink-clusters'); ?></p>
+                        <p><?php _e('Enter any topic to find all related content and build internal link clusters. Larger clusters provide more comprehensive results but take longer to generate (up to 1-2 minutes).', 'texolink-clusters'); ?></p>
                     </div>
                 </div>
 
@@ -262,22 +269,30 @@ class TexoLink_Clusters_Admin {
      */
     public function ajax_generate() {
         check_ajax_referer('texolink_clusters_nonce', 'nonce');
-        
+
         if (!current_user_can('manage_options')) {
             wp_send_json_error(__('Insufficient permissions', 'texolink-clusters'));
             return;
         }
-        
+
         $topic = isset($_POST['topic']) ? sanitize_text_field($_POST['topic']) : '';
-        
+        $cluster_size = isset($_POST['cluster_size']) ? absint($_POST['cluster_size']) : 20;
+
+        // Validate cluster size
+        if ($cluster_size < 5) {
+            $cluster_size = 5;
+        } elseif ($cluster_size > 30) {
+            $cluster_size = 30;
+        }
+
         if (empty($topic)) {
             wp_send_json_error(__('Topic is required', 'texolink-clusters'));
             return;
         }
-        
+
         // Start generation via connector
         $connector = new TexoLink_Clusters_API_Connector();
-        $result = $connector->generate_topic_cluster($topic);
+        $result = $connector->generate_topic_cluster($topic, $cluster_size);
         
         if (is_wp_error($result)) {
             wp_send_json_error($result->get_error_message());

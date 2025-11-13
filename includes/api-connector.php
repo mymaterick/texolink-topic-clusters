@@ -55,11 +55,12 @@ class TexoLink_Clusters_API_Connector {
     /**
      * Generate topic cluster (async)
      * Returns a generation_id for tracking progress
-     * 
+     *
      * @param string $topic Topic to search for
+     * @param int $cluster_size Number of posts to include in cluster (5-30)
      * @return array|WP_Error Response with generation_id or error
      */
-    public function generate_topic_cluster($topic) {
+    public function generate_topic_cluster($topic, $cluster_size = 20) {
         if (empty($this->site_domain)) {
             return new WP_Error(
                 'no_site_domain',
@@ -88,7 +89,8 @@ class TexoLink_Clusters_API_Connector {
             ),
             'body' => json_encode(array(
                 'site_key' => $this->site_domain,  // Send site domain for identification
-                'topic' => $topic
+                'topic' => $topic,
+                'cluster_size' => $cluster_size
             ))
         ));
 
