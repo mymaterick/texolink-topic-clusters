@@ -33,12 +33,31 @@ class TexoLink_Clusters_API_Connector {
      */
     public function __construct() {
         $this->api_url = texolink_clusters_get_api_url();
-        // Get API key from main TexoLink plugin
+
+        // Try multiple methods to get API key from main TexoLink plugin
         $this->site_key = get_option('texolink_api_key', '');
 
+        // If not found, try the helper function
+        if (empty($this->site_key) && function_exists('texolink_get_site_key')) {
+            $this->site_key = texolink_get_site_key();
+        }
+
+        // If still not found, try texolink_site_id option
+        if (empty($this->site_key)) {
+            $this->site_key = get_option('texolink_site_id', '');
+        }
+
         // DEBUG: Log what we got
-        error_log('TexoLink Clusters DEBUG - API Key retrieved: ' . ($this->site_key ? 'YES (length: ' . strlen($this->site_key) . ')' : 'NO (empty)'));
-        error_log('TexoLink Clusters DEBUG - All texolink options: ' . print_r(wp_load_alloptions(), true));
+        error_log('TexoLink Clusters DEBUG - API Key from texolink_api_key: ' . get_option('texolink_api_key', 'EMPTY'));
+        error_log('TexoLink Clusters DEBUG - API Key from texolink_site_id: ' . get_option('texolink_site_id', 'EMPTY'));
+        error_log('TexoLink Clusters DEBUG - Final site_key: ' . ($this->site_key ? 'YES (length: ' . strlen($this->site_key) . ')' : 'NO (empty)'));
+
+        // Log ALL options that contain 'texolink'
+        $all_options = wp_load_alloptions();
+        $texolink_options = array_filter($all_options, function($key) {
+            return stripos($key, 'texolink') !== false;
+        }, ARRAY_FILTER_USE_KEY);
+        error_log('TexoLink Clusters DEBUG - All TexoLink options: ' . print_r($texolink_options, true));
     }
     
     /**
