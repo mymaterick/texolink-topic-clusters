@@ -74,7 +74,7 @@ class TexoLink_Clusters_API_Connector {
             );
         }
 
-        $endpoint = trailingslashit($this->api_url) . 'api/topic-cluster';
+        $endpoint = trailingslashit($this->api_url) . 'topic-cluster';
 
         error_log('TexoLink Clusters - Generate endpoint: ' . $endpoint);
         error_log('TexoLink Clusters - Topic: ' . $topic);
