@@ -24,9 +24,14 @@ class TexoLink_Clusters_API_Connector {
     private $api_url;
 
     /**
-     * Site API key (from main TexoLink plugin)
+     * Site domain (used for identification)
      */
-    private $site_key;
+    private $site_domain;
+
+    /**
+     * Admin secret (from main TexoLink plugin)
+     */
+    private $admin_secret;
 
     /**
      * Constructor
@@ -34,30 +39,17 @@ class TexoLink_Clusters_API_Connector {
     public function __construct() {
         $this->api_url = texolink_clusters_get_api_url();
 
-        // Try multiple methods to get API key from main TexoLink plugin
-        $this->site_key = get_option('texolink_api_key', '');
+        // Get site domain (e.g., "texolink.com")
+        // This is used to identify the site in the backend database
+        $site_url = get_site_url();
+        $parsed = parse_url($site_url);
+        $this->site_domain = $parsed['host'] ?? '';
 
-        // If not found, try the helper function
-        if (empty($this->site_key) && function_exists('texolink_get_site_key')) {
-            $this->site_key = texolink_get_site_key();
-        }
+        // Get admin secret from main TexoLink plugin
+        $this->admin_secret = get_option('texolink_admin_secret', '');
 
-        // If still not found, try texolink_site_id option
-        if (empty($this->site_key)) {
-            $this->site_key = get_option('texolink_site_id', '');
-        }
-
-        // DEBUG: Log what we got
-        error_log('TexoLink Clusters DEBUG - API Key from texolink_api_key: ' . get_option('texolink_api_key', 'EMPTY'));
-        error_log('TexoLink Clusters DEBUG - API Key from texolink_site_id: ' . get_option('texolink_site_id', 'EMPTY'));
-        error_log('TexoLink Clusters DEBUG - Final site_key: ' . ($this->site_key ? 'YES (length: ' . strlen($this->site_key) . ')' : 'NO (empty)'));
-
-        // Log ALL options that contain 'texolink'
-        $all_options = wp_load_alloptions();
-        $texolink_options = array_filter($all_options, function($key) {
-            return stripos($key, 'texolink') !== false;
-        }, ARRAY_FILTER_USE_KEY);
-        error_log('TexoLink Clusters DEBUG - All TexoLink options: ' . print_r($texolink_options, true));
+        error_log('TexoLink Clusters - Site domain: ' . $this->site_domain);
+        error_log('TexoLink Clusters - Admin secret: ' . ($this->admin_secret ? 'Found (' . strlen($this->admin_secret) . ' chars)' : 'NOT FOUND'));
     }
     
     /**
@@ -68,26 +60,34 @@ class TexoLink_Clusters_API_Connector {
      * @return array|WP_Error Response with generation_id or error
      */
     public function generate_topic_cluster($topic) {
-        if (empty($this->site_key)) {
+        if (empty($this->site_domain)) {
             return new WP_Error(
-                'no_api_key',
-                __('TexoLink API key not configured. Please configure it in TexoLink settings first.', 'texolink-clusters')
+                'no_site_domain',
+                __('Site domain not detected. Please check your WordPress configuration.', 'texolink-clusters')
             );
         }
 
-        $endpoint = trailingslashit($this->api_url) . 'generate_topic_cluster';
+        if (empty($this->admin_secret)) {
+            return new WP_Error(
+                'no_admin_secret',
+                __('Admin secret not configured. Please check TexoLink settings.', 'texolink-clusters')
+            );
+        }
+
+        $endpoint = trailingslashit($this->api_url) . 'api/topic-cluster';
 
         error_log('TexoLink Clusters - Generate endpoint: ' . $endpoint);
         error_log('TexoLink Clusters - Topic: ' . $topic);
-        error_log('TexoLink Clusters - Using site_key from TexoLink plugin');
+        error_log('TexoLink Clusters - Site domain: ' . $this->site_domain);
 
         $response = wp_remote_post($endpoint, array(
             'timeout' => 30,
             'headers' => array(
                 'Content-Type' => 'application/json',
+                'X-Admin-Secret' => $this->admin_secret
             ),
             'body' => json_encode(array(
-                'site_key' => $this->site_key,  // Use API key from main TexoLink plugin
+                'site_key' => $this->site_domain,  // Send site domain for identification
                 'topic' => $topic
             ))
         ));
